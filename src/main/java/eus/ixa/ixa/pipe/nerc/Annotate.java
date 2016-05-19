@@ -214,9 +214,8 @@ public class Annotate {
                 Span[] numericSpans = numericLexerFinder.nercToSpans(tokens);
                 SpanUtils.concatenateSpans(allSpans, numericSpans);
             }
-            Span[] allSpansArray = NameFinderME.dropOverlappingSpans(allSpans
-                    .toArray(new Span[allSpans.size()]));
-            List<Name> names = new ArrayList<Name>();
+            Span[] allSpansArray = NameFinderME.dropOverlappingSpans(allSpans.toArray(new Span[allSpans.size()]));
+            List<Name> names;
             if (statistical) {
                 names = nameFinder.getNamesFromSpans(allSpansArray, tokens);
             } else {
@@ -225,8 +224,7 @@ public class Annotate {
             for (Name name : names) {
                 Integer startIndex = name.getSpan().getStart();
                 Integer endIndex = name.getSpan().getEnd();
-                List<Term> nameTerms = kaf.getTermsFromWFs(Arrays.asList(Arrays
-                        .copyOfRange(tokenIds, startIndex, endIndex)));
+                List<Term> nameTerms = kaf.getTermsFromWFs(Arrays.asList(Arrays.copyOfRange(tokenIds, startIndex, endIndex)));
                 ixa.kaflib.Span<Term> neSpan = KAFDocument.newTermSpan(nameTerms);
                 List<ixa.kaflib.Span<Term>> references = new ArrayList<ixa.kaflib.Span<Term>>();
                 references.add(neSpan);
@@ -238,6 +236,42 @@ public class Annotate {
             }
         }
         nameFinder.clearAdaptiveData();
+    }
+
+    public final List<Name> annotateNEs(String[] tokens) throws IOException {
+
+        List<Span> allSpans = new ArrayList<>();
+
+        if (statistical) {
+            Span[] statSpans = nameFinder.nercToSpans(tokens);
+            allSpans.addAll(Lists.newArrayList(statSpans));
+        }
+        if (postProcess) {
+            Span[] dictSpans = dictFinder.nercToSpansExact(tokens);
+            SpanUtils.postProcessDuplicatedSpans(allSpans, dictSpans);
+            SpanUtils.concatenateSpans(allSpans, dictSpans);
+        }
+        if (dictTag) {
+            Span[] dictOnlySpans = dictFinder.nercToSpansExact(tokens);
+            allSpans = Lists.newArrayList(dictOnlySpans);
+        }
+        if (lexerFind) {
+            String sentenceText = StringUtils.getStringFromTokens(tokens);
+            StringReader stringReader = new StringReader(sentenceText);
+            BufferedReader sentenceReader = new BufferedReader(stringReader);
+            numericLexerFinder = new NumericNameFinder(sentenceReader, nameFactory);
+            Span[] numericSpans = numericLexerFinder.nercToSpans(tokens);
+            SpanUtils.concatenateSpans(allSpans, numericSpans);
+        }
+        Span[] allSpansArray = NameFinderME.dropOverlappingSpans(allSpans.toArray(new Span[allSpans.size()]));
+        List<Name> names;
+        if (statistical) {
+            names = nameFinder.getNamesFromSpans(allSpansArray, tokens);
+        } else {
+            names = dictFinder.getNamesFromSpans(allSpansArray, tokens);
+        }
+        nameFinder.clearAdaptiveData();
+        return names;
     }
 
     /**

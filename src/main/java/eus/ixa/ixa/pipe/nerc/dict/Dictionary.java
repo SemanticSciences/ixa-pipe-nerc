@@ -15,14 +15,13 @@
  */
 package eus.ixa.ixa.pipe.nerc.dict;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import opennlp.tools.namefind.BilouCodec;
+import opennlp.tools.namefind.BioCodec;
+import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.model.ArtifactSerializer;
+import opennlp.tools.util.model.SerializableArtifact;
+
+import java.io.*;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,12 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
-
-import opennlp.tools.namefind.BilouCodec;
-import opennlp.tools.namefind.BioCodec;
-import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.util.model.ArtifactSerializer;
-import opennlp.tools.util.model.SerializableArtifact;
 
 /**
  * Dictionary class which creates a HashMap String, String from 
@@ -205,12 +198,12 @@ public class Dictionary implements SerializableArtifact {
    * @return the string representing the possibly multi token entity
    */
   private String createSpan(String[] tokens, int from, int to) {
-    String tokenSpan = "";
+    StringBuffer tokenSpanBuffer = new StringBuffer();
     for (int i = from; i < to; i++) {
-      tokenSpan += tokens[i] + " ";
+      tokenSpanBuffer.append(tokens[i]).append(' ');
     }
-    tokenSpan += tokens[to];
-    return tokenSpan;
+    tokenSpanBuffer.append(tokens[to]);
+    return tokenSpanBuffer.toString();
   }
 
   public void serialize(OutputStream out) throws IOException {

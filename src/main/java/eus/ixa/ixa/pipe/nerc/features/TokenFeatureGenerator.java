@@ -15,38 +15,31 @@
  */
 package eus.ixa.ixa.pipe.nerc.features;
 
-import java.util.List;
-
-import eus.ixa.ixa.pipe.nerc.train.Flags;
-
 import opennlp.tools.util.featuregen.FeatureGeneratorAdapter;
+
+import java.util.List;
 
 /**
  * Generates a feature which contains the token itself.
  */
 public class TokenFeatureGenerator extends FeatureGeneratorAdapter {
 
-  private boolean lowercase;
+    private boolean lowercase;
 
-  public TokenFeatureGenerator(boolean lowercase) {
-    this.lowercase = lowercase;
-  }
-
-  
-  public TokenFeatureGenerator() {
-    this(true);
-  }
-
-  public void createFeatures(List<String> features, String[] tokens, int index,
-      String[] preds) {
-
-    if (lowercase) {
-      features.add("w=" + tokens[index].toLowerCase());
-      if (Flags.DEBUG) {
-        System.err.println("-> " + tokens[index].toLowerCase() + ": w=" + tokens[index].toLowerCase());
-      }
-    } else {
-      features.add("w=" + tokens[index]);
+    public TokenFeatureGenerator(boolean lowercase) {
+        this.lowercase = lowercase;
     }
-  }
+
+
+    public TokenFeatureGenerator() {
+        this(true);
+    }
+
+    public void createFeatures(List<String> features, String[] tokens, int index, String[] preds) {
+        if (lowercase) {
+            features.add("w=" + tokens[index].toLowerCase());
+        } else {
+            features.add("w=" + tokens[index]);
+        }
+    }
 }
